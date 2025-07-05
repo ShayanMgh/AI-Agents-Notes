@@ -158,5 +158,182 @@ LLM: { "tool": "fetch_ticket_price", "destination": "Paris" }
 | **Autonomy**  | Low–Medium (assistive)         | High (autonomous behavior)         |
 
 
+# 🚀 Week 2: Asyncio & OpenAI Agents SDK
 
+---
 
+## ⚡ **Why Learn Asyncio?**
+
+- Async Python is foundational across all major agent frameworks (**OpenAI SDK, CrewAI, LangGraph**, etc.).
+- It enables agents to handle many concurrent tasks efficiently — especially I/O-bound operations like:
+  - Waiting on LLM responses
+  - Fetching web data
+  - Querying databases or tools
+
+---
+
+## 🧵 **What Is Asyncio?**
+
+- A **lightweight concurrency model** in Python (since 3.5)
+- NOT multithreading or multiprocessing — avoids OS-level threads
+- Runs a **single-threaded event loop** that switches between tasks while they wait
+
+---
+
+## 🔑 **Core Concepts**
+
+### ✅ `async def`
+- Declares a **coroutine** (not a regular function)
+- Returns a coroutine object — doesn’t execute immediately
+
+### ✅ `await`
+- Pauses execution and **waits for a coroutine** to finish
+
+```python
+async def fetch_data():
+    return "done"
+
+result = await fetch_data()
+```
+✅ **Coroutine**
+- A function that can **pause and resume**
+- Scheduled and managed by Python’s **event loop**
+
+---
+
+🌀 **The Event Loop**
+
+The engine that powers asyncio:
+
+- Starts and pauses coroutines
+- Runs other coroutines while one is waiting
+- Enables concurrent behavior in I/O-heavy programs
+
+### 🛠️ Useful Pattern: `asyncio.gather()`
+
+- Run multiple coroutines concurrently.
+
+```python
+results = await asyncio.gather(
+    fetch_data1(),
+    fetch_data2(),
+    fetch_data3()
+)
+```
+Efficient when calling multiple APIs or agents at once.
+
+### 🧠 How to Think About It
+
+- Async Python = manual multitasking at the code level.
+- Great for multi-agent orchestration, background tasks, and responsiveness.
+
+---
+
+### 📌 Bottom Line
+
+| Concept          | Meaning                                  |
+|------------------|-------------------------------------------|
+| `async def`      | Define a coroutine                        |
+| `await`          | Run the coroutine and wait for result     |
+| Coroutine        | Pauseable, resumable function             |
+| Event loop       | Orchestrates coroutine execution          |
+| `asyncio.gather` | Run multiple coroutines concurrently      |
+
+---
+
+### 🚀 OpenAI Agents SDK: Overview
+
+- Lightweight, flexible, and not opinionated — lets you design agents your way.
+- Simplifies common tasks like tool use and LLM orchestration (e.g., managing JSON, if-statements).
+- Great for rapid prototyping without getting bogged down in boilerplate.
+
+---
+
+### ⚙️ Why Use It?
+
+- Handles routine complexity like:
+  - Tool invocation structure
+  - Multi-step agent coordination
+  - Prompt formatting & response parsing
+- Makes tool usage clean and maintainable without losing control over the logic.
+
+---
+
+### 📚 Key Terminology
+
+| Term       | Meaning                                             |
+|------------|------------------------------------------------------|
+| Agent      | A defined role + behavior built around LLM calls     |
+| Handoff    | Interaction or communication between agents          |
+| Guardrails | Checks and constraints to keep agents on-task & safe |
+
+---
+
+### 🧪 How to Use It: The 3-Step Pattern
+
+1. **Create an agent instance**  
+   → Define what role the agent plays (e.g., researcher, planner, responder).
+
+2. **Use with `trace` block**  
+   → Optional but recommended for debugging and logging interactions using OpenAI’s trace viewer.
+
+3. **Run the agent with `runner.run()`**  
+   → This is a coroutine → must use `await`.
+
+---
+
+### 🔁 Typical Code Flow
+
+```python
+async def main():
+    agent = Agent(role=..., instructions=...)
+    with trace(agent):
+        result = await runner.run(agent)
+```
+### 🎧 What Is Vibe Coding?
+
+Coined by **Andrej Karpathy**, **vibe coding** is a relaxed, iterative way of coding with LLMs — generating snippets, tweaking them, and building up functionality quickly without overplanning.
+
+---
+
+### ✅ Why It’s Powerful
+
+- Boosts creativity and momentum.
+- Lets you explore and learn new frameworks or APIs quickly.
+- Perfect for prototyping and experimenting.
+
+---
+
+### 🛡️ 5 Survival Tips for Effective Vibe Coding
+
+#### 1. Good Vibes
+- Craft high-quality prompts you can reuse.
+- Ask for concise, modern code (LLMs can be verbose or outdated).
+- Include today’s date to get up-to-date API usage.
+
+#### 2. Vibe but Verify
+- Don’t trust one model blindly.
+- Cross-check outputs by asking the same question to multiple LLMs (e.g., ChatGPT & Claude).
+
+#### 3. Step Up the Vibe
+- Avoid giant blobs of LLM-generated code.
+- Ask for code in small, testable chunks (e.g., one function at a time).
+- Not sure how to break it down? Ask the LLM to design the step-by-step breakdown first.
+
+#### 4. Vibe and Validate
+- Use a second LLM to review or optimize what the first LLM wrote.
+- Ask for feedback: _“Is this the cleanest/best way to do it?”_
+- Emulates the evaluator-optimizer agent pattern manually.
+
+#### 5. Vibe with Variety
+- Ask for multiple solutions to the same problem.
+- Encourage creativity and comparison.
+- Request explanations to deepen your understanding and catch flaws.
+
+---
+
+### 💬 Final Thought
+
+> Vibe coding is fun only if you understand what's going on.  
+> Always follow up by asking the LLM to explain the code until it’s fully clear to you.  
+> Otherwise, debugging becomes painful fast.
