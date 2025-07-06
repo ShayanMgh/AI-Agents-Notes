@@ -1,4 +1,4 @@
-# 🤖 AgenticAI Course Recap – Ed Donner
+# 🤖 Agentic AI Engineering Course Recap – Ed Donner
 
 ## 🎓 **Course Overview: Building AI Agents**
 
