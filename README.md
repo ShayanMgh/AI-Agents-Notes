@@ -847,9 +847,212 @@ graph = StateGraph(MyState)
 
 ### 🔁 1. What is a Superstep?
 
-* A **superstep** = one full invocation of a graph.
-* Every time the graph is run (e.g., in response to user input), it’s a new superstep.
+* A superstep = one full invocation of a graph.
+* Every time the graph is run (e.g. in response to a user input), it's a new superstep.
 * Nodes that execute in parallel belong to the same superstep.
 * Sequential interactions (like another user input) trigger a new superstep.
 
-> ✅ Think of each user interaction (message, prompt, etc.) as one superstep.
+✅ Think of each user interaction (message, prompt, etc.) as one superstep.
+
+### 🧹 2. Graph Lifecycle Overview
+
+Each graph run involves:
+
+1. Defining the graph:
+
+   * State class
+   * Graph builder
+   * Nodes
+   * Edges
+   * Compilation
+2. Invoke the graph with some input → Superstep 1
+3. Get output
+4. Another input → Superstep 2
+5. And so on…
+
+#### 🧠 Visual mental model:
+
+```mathematica
+[Graph Definition]
+    ↓
+[User Input 1] → [Graph Invocation 1] → Output 1
+    ↓
+[User Input 2] → [Graph Invocation 2] → Output 2
+    ↓
+...
+```
+
+### 🧠 3. Why Are Supersteps Important?
+
+* They're the unit of execution in LangGraph.
+* Reducers (used to combine state) only apply within a single superstep.
+* To persist and manage state between supersteps, you need checkpointing.
+
+### 📍 4. Checkpointing
+
+* Checkpointing = saving the final state at the end of each superstep.
+* On the next invocation (next superstep), LangGraph can resume from this checkpointed state.
+* Essential for memory persistence, context tracking, and conversation continuity.
+
+📌 Without checkpointing, your graph starts from scratch every time.
+
+### 🧪 5. What’s Next in Lab
+
+You'll explore:
+
+* How LangSmith logs info
+* Tool calling (built-in & custom)
+* Implementing checkpointing for memory across interactions
+
+---
+
+## 🧠 LangGraph Checkpointing – Key Points
+
+### 📌 Why Memory Doesn’t Persist by Default
+
+* Even though LangGraph uses state and reducers, that state only exists during a single superstep (one invocation of the graph).
+* Without checkpointing, state is lost between supersteps — e.g., the graph won’t remember your name across turns.
+
+### 📀 Checkpointing: How LangGraph Remembers Between Steps
+
+1. **Use `MemorySaver`**
+
+   * Acts as an in-memory checkpoint storage (not a long-term database).
+   * Captures the entire state after each superstep.
+
+2. **Pass `checkpointer=memory` when compiling the graph:**
+
+```python
+graph = graph.compile(checkpointer=memory)
+```
+
+3. **Use a config dict with a thread ID to associate calls with a memory thread:**
+
+```python
+config = {
+    "configurable": {
+        "thread_id": "1"  # identifies the conversation
+    }
+}
+```
+
+4. **Pass config to `graph.invoke()` to tie the call to that memory thread.**
+
+---
+
+## 🧠 How It Works
+
+* State is remembered per thread ID.
+* When you change the thread ID, the memory resets (like starting a new conversation).
+* When you reuse the same thread ID, LangGraph pulls from the last checkpoint.
+
+## 🔄 Time Travel with LangGraph
+
+You can:
+
+* Call `.get_state(config)` → gives the latest state for a thread.
+* Call `.get_state_history(config)` → gives the full history of each superstep's state.
+* Use a checkpoint ID to rewind and rerun from a specific past moment.
+
+🕰️ This lets you “time travel” — e.g., replay past conversation states or resume from failure.
+
+---
+
+## 💡 Why This Matters
+
+* Unlike hacks like storing state in UI globals (e.g., in Gradio), checkpointing is:
+
+  * Structured
+  * Repeatable
+  * Resilient (easy to debug and retry)
+# 🌟 Week 5: Autogen Overview
+
+## 🧠 Autogen Overview – Key Concepts & Context
+
+### 🚀 What is Autogen?
+
+* Autogen is an open-source agent framework by **Microsoft**.
+* Focused on async, event-driven architecture to enable:
+
+  * Better **observability**
+  * Improved **flexibility**, **control**, and **scalability**
+* The version used in the course: **v0.5.1** (based on the rewrite that started at v0.4)
+
+---
+
+### 🔀 Big Drama: Two Competing Versions
+
+#### ✅ Microsoft Autogen (v0.4+)
+
+* The **official** track used in this course
+* More **structured**, **stable**, and **enterprise-focused**
+* Actively supported by Microsoft
+
+#### ⚔️ AG2 (Autogen Gen 2 / AgentOS2)
+
+* **Forked** by original Autogen creators after leaving Microsoft
+* Based on **older** version (v0.2) but claims to move faster
+* Owns the `autogen` name on **PyPI**:
+
+  * `pip install autogen` installs **AG2**, not Microsoft’s version
+* Has taken over original **Discord** and some community spaces
+
+> 📌 **Key Caution**: Always verify if docs/tutorials refer to **AG2** or **Microsoft Autogen**
+> — they’re **not compatible**.
+
+---
+
+## 🔧 Autogen Core – Distributed Runtime (Experimental)
+
+### 🧱 What is Autogen Core?
+
+* The **lowest layer** of Autogen.
+* A framework for **agent interaction**, not agent implementation.
+* Similar to **LangGraph** in structure, but with different focus:
+
+  * **LangGraph** → Focused on **repeatable workflows**
+  * **Autogen Core** → Focused on **dynamic agent interactions**
+
+---
+
+### 🚀 Distributed Runtime – Overview
+
+* Enables agents to run across **multiple processes or machines**.
+
+> ⚠️ Still **experimental**:
+>
+> * APIs may change
+> * Not production-ready — more of a **preview**
+
+---
+
+## 🧩 Two Main Components
+
+### 1. Host Service
+
+* Acts as a **container and coordinator**.
+* Responsibilities:
+
+  * Handles **message delivery**
+  * Manages **agent sessions**
+  * Uses **gRPC** for cross-machine/process communication
+
+### 2. Worker Runtime
+
+* Manages **actual agent instances**
+* Responsibilities:
+
+  * Hosts and executes **agent logic**
+  * Registers available agents with the **host**
+  * Handles **execution** during tasks
+
+---
+
+## 🌐 What It Enables
+
+* **Multi-agent systems** distributed across machines or languages
+* **Separation** of infrastructure and logic:
+
+  * **Host** deals with communication
+  * **Worker** handles agent behavior
+
