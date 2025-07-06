@@ -337,8 +337,12 @@ Coined by **Andrej Karpathy**, **vibe coding** is a relaxed, iterative way of co
 > Vibe coding is fun only if you understand what's going on.  
 > Always follow up by asking the LLM to explain the code until it’s fully clear to you.  
 > Otherwise, debugging becomes painful fast.
-## Week 3 : Crew AI
 
+
+# 🚀 Week 3 : Crew AI
+
+
+---
 ### 🌐 What Is Crew AI?
 
 Crew AI refers to **three distinct offerings**:
@@ -611,3 +615,241 @@ Crew supports **5 memory types** — focus on these 3:
 - **Contextual Memory** – Umbrella term combining short/long/entity  
 - **User Memory** – For user-specific info (manual handling required)
 
+  
+# 🚀 Week 4 : LangChain and LangGhraph
+
+
+---
+🧠 Context: LangChain Ecosystem Overview
+1. LangChain  
+* Originally built to abstract away LLM-specific integration complexities.  
+* Focused on chaining LLM calls, tool use, memory, RAG, prompt templates.  
+* Powerful, but:  
+    * Opinionated.  
+    * Less transparent (abstracts away prompt logic).  
+    * Less necessary now that LLM APIs are standardized (especially OpenAI-style).  
+
+2. LangGraph  
+* Not part of LangChain per se (though from same company).  
+* Focus: stable, scalable, fault-tolerant workflows for agent systems.  
+* Think of it as a graph of nodes, where each node is:  
+    * An agent  
+    * A logic step  
+    * A human-in-the-loop  
+    * A memory checkpoint  
+📌 Core Idea: Model complex workflows as graphs to enable control, repeatability, and fault tolerance.  
+Key Features:  
+    * Human-in-the-loop support  
+    * Memory handling (via LangChain or external)  
+    * "Time travel": checkpointing and rewinding to prior graph state  
+    * Robust retry & fallback  
+    * Plug-and-play: you can use LangChain or not  
+
+3. LangSmith  
+* Separate product for debugging, visibility, and analytics  
+* Can be used with:  
+    * LangChain  
+    * LangGraph  
+    * Standalone LLM apps  
+* Tracks inputs, outputs, reasoning paths  
+* Useful for monitoring and debugging your agent workflows  
+
+⚙️ Why Use LangGraph?  
+**Need** | **Solution LangGraph Offers**  
+---|---  
+Complex agent collaboration | Graph-based workflow control  
+Fail-safety & retries | Fault tolerance built-in  
+Workflow versioning/checkpoints | “Time travel” to restore previous states  
+Inter-agent communication | Modeled through graph edges  
+Monitoring | Via LangSmith integration  
+
+🧭 Summary  
+* LangChain = abstraction framework for LLM apps (with memory, RAG, tools, etc.)  
+* LangGraph = graph-based framework for building resilient multi-agent systems  
+* LangSmith = monitoring/debugging tool for both  
+
+📦 LangGraph = 3 Distinct Parts  
+**Component** | **Purpose**  
+---|---  
+LangGraph (Framework) | Open-source core used to build agent workflows (like Crew’s framework).  
+LangGraph Studio | Visual builder to design graphs via UI (similar to Crew Studio).  
+LangGraph Platform | Hosted enterprise service to deploy/run LangGraph apps (like Crew Enterprise).  
+⚠️ Note: The website promotes LangGraph Platform heavily — likely the commercial focus.  
+
+🧠 Anthropic’s Perspective on Frameworks  
+From their blog “Building Effective Agents”:  
+* Frameworks like LangGraph help by abstracting:  
+    * LLM calls  
+    * Tool usage  
+    * Chaining logic  
+* But:  
+    * Abstractions can hide the real prompts and make debugging harder.  
+    * Encourage unnecessary complexity when simple code would do.  
+Their recommendation:  
+🔹 Start with direct LLM API use (simple JSON, raw calls).  
+🔹 Use frameworks only if you understand what they abstract.  
+🔹 Incorrect assumptions about frameworks often lead to errors.  
+
+🧭 Summary Takeaway  
+**LangGraph Strengths** | **Anthropic’s Caution**  
+---|---  
+Stability, resilience, checkpointing via graph | Adds complexity and hides prompt details  
+Ideal for large, multi-agent workflows | May not be needed for small/simple applications  
+Visual tools and hosted platform | Prefer lightweight, transparent implementations  
+
+🧠 Core Concepts in Landgraf  
+**Term** | **Description**  
+---|---  
+Graph | The entire agent workflow, represented as a graph (like a tree structure).  
+State | A shared object that holds the current snapshot of your application. Immutable – always return a new version of state.  
+Node | A Python function that performs a task. It takes in state, does something (like LLM call), and returns a new state.  
+Edge | A Python function that determines what node runs next based on the current state. Can be simple or conditional.  
+🟠 Nodes do the work, 🔵 Edges decide what happens next.  
+
+🛠️ The 5 Steps to Building a Landgraf Agent  
+1. Define the State Class  
+    * Holds shared info used by all nodes.  
+    * Immutable: always return a new version after updates.  
+2. Start a Graph Builder  
+    * This is where you define how your workflow is laid out.  
+    * Think of it as setting the blueprint before running.  
+3. Create Nodes  
+    * Each one is a Python function (e.g., LLM call, file write).  
+    * Operates on state and returns an updated version.  
+4. Create Edges  
+    * Define transitions between nodes.  
+    * Can be fixed (always runs next) or conditional (based on state).  
+5. Compile the Graph  
+    * Turns your design into an executable workflow.  
+    * After compiling, you can run the graph.  
+
+⚙️ Execution Flow of a Landgraf App  
+There are 2 phases when running a graph:  
+* Phase 1: Define your agent workflow (the 5 steps above).  
+* Phase 2: Run the compiled graph with initial input.  
+This two-phase design is different from typical Python scripts and may feel unfamiliar at first — but it gives powerful structure and clarity.  
+
+🧊 What Is Immutable State?  
+* Immutable means: once created, the state cannot be modified.  
+* Instead of changing it, you:  
+    * Read from the current state (e.g., state.count)  
+    * Create and return a new state with updated values.  
+
+```python
+def my_counting_node(state: MyState):
+    new_count = state.count + 1
+    return MyState(count=new_count)
+```
+✅ Helps with traceability and consistency across agent execution.
+# 🔁 Reducer Functions: What and Why
+
+## 🧩 Concept Table
+
+| Concept | Description |
+|--------|-------------|
+| Reducer | A special function tied to a state field that tells Landgraf how to combine values. |
+| Purpose | Enables parallel execution of nodes safely. Avoids overwriting updates from other nodes. |
+
+## 🧠 Why It Matters
+
+- If multiple nodes update the same field at the same time, reducer logic safely merges them.
+- Without reducers, simultaneous updates would conflict or overwrite each other.
+
+## ✅ Example Scenario
+
+If multiple nodes increment `count`, a reducer might define how to sum values instead of overwrite:
+
+```python
+@state.reducer("count")
+def combine_counts(old_value, new_value):
+    return old_value + new_value
+```
+## 🛍️ Summary Takeaway
+
+| Principle       | Why It’s Important                                                          |
+| --------------- | --------------------------------------------------------------------------- |
+| Immutability    | Keeps state clean, traceable, and rollback-friendly.                        |
+| Reducers        | Enable safe, parallel execution with no lost updates.                       |
+| Two-phase model | First build the graph, then run it — this supports scalability and clarity. |
+
+---
+
+## 🧠 Key Concepts from Landgraf Lab 1 (Week 4)
+
+### 📌 1. We’re Back to Notebooks
+
+* This lab is built in a notebook format (like previous non-Crew weeks).
+* Code still plays a central role — don’t worry if you prefer that.
+
+### 🤩 2. What is `Annotated` in Python?
+
+* `Annotated` is used to add metadata to a variable or parameter.
+* Python ignores this metadata at runtime — but tools like Landgraf can read it.
+
+```python
+from typing import Annotated
+
+def shout(text: Annotated[str, "Something to be shouted"]) -> str:
+    return text.upper()
+```
+
+> 🟨 This has no runtime effect but gives extra context — useful for tools like Landgraf.
+
+### 🔁 3. Reducers via Annotation
+
+* Landgraf requires you to annotate state fields when using reducers.
+* This tells Landgraf how to combine field values when multiple nodes return updates simultaneously.
+
+#### Example setup:
+
+```python
+from landgraf.message import add_messages
+from pydantic import BaseModel
+from typing import Annotated, List
+
+class MyState(BaseModel):
+    messages: Annotated[List[str], add_messages]
+```
+
+> ✅ `add_messages` is a built-in reducer that simply concatenates lists of messages.
+
+### 🧱 4. Defining Your Graph’s State
+
+* The state is often implemented using a `pydantic.BaseModel` (or `TypedDict`).
+* State is immutable — you return a new state object every time.
+* ❗ Reducers help merge states when nodes update in parallel — avoiding overwrites.
+
+### 🛠️ 5. Start the Graph Builder
+
+Step 2 of the Landgraf setup process:
+
+```python
+from landgraf import StateGraph
+
+graph = StateGraph(MyState)
+```
+
+> 🔹 You pass the **class** (not an instance) to `StateGraph`.
+
+---
+
+## ✅ Summary of Steps (So Far)
+
+| Step | Description                                         |
+| ---- | --------------------------------------------------- |
+| 1    | Define State class with annotated fields & reducers |
+| 2    | Start the graph builder using `StateGraph(State)`   |
+| 3–5  | Next: Create nodes, edges, and compile the graph    |
+
+---
+
+## 🧠 Key Concepts: Supersteps & Checkpointing in Landgraf
+
+### 🔁 1. What is a Superstep?
+
+* A **superstep** = one full invocation of a graph.
+* Every time the graph is run (e.g., in response to user input), it’s a new superstep.
+* Nodes that execute in parallel belong to the same superstep.
+* Sequential interactions (like another user input) trigger a new superstep.
+
+> ✅ Think of each user interaction (message, prompt, etc.) as one superstep.
