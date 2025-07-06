@@ -1056,3 +1056,171 @@ You can:
   * **Host** deals with communication
   * **Worker** handles agent behavior
 
+# ⭐️ Week 6: The Pinnacle
+
+## 🧱 What's Happening This Week?
+
+1. Introduction to MCP (Model Context Protocol) by Anthropic
+2. Return to the OpenAI Agents SDK (used alongside MCP)
+
+---
+
+## 🛠️ Quick Recap of Framework Journey So Far:
+
+* **Week 1**: Raw tools and APIs
+* **Week 2**: OpenAI Agents SDK
+* **Week 3**: Crew (structured, YAML-first)
+* **Week 4**: LangGraph (graph-style agent coordination)
+* **Week 5**: Autogen (multi-agent, experimental, with Autogen Core)
+* **Week 6**: **MCP** – not a framework, but a **standard**
+
+---
+
+## ❓ What MCP Is Not
+
+* Not an agent framework (unlike Crew or OpenAI SDK)
+* Not used to build agents directly
+* Not a fundamental rework of how agents function
+* Does not include tools — it defines how to integrate them
+
+---
+
+## ✅ What MCP Is
+
+* A **protocol / standard**: Defines how agents access tools, resources, and prompts
+* Think of it as the **USB-C of AI**: a universal connector for agent functionality
+
+### Enables:
+
+* Tool integration (most hyped use case)
+* Resources (e.g., context providers)
+* Prompt templates
+
+---
+
+## 🤔 Why Might You Be Skeptical?
+
+* Feels like just another spec
+* Frameworks like LangChain already support tool ecosystems
+* You can always write your own tools manually
+
+---
+
+## 💡 Why It’s Exciting
+
+* **Frictionless integration**: Easier than custom JSON or framework-specific tool wrappers
+* **Framework-agnostic**: Works with Autogen, LangChain, OpenAI Agents SDK, etc.
+* **Exploding adoption**: Big network effects + active community
+* **Tons of MCP tools already available**: Ready-to-use marketplace ecosystem
+* **Backed by Anthropic**: A major AI player giving it legitimacy and traction
+* **Standards matter**: Like HTML, a well-adopted protocol becomes foundational
+
+---
+
+## ⟳ Final Thought
+
+> MCP doesn’t replace frameworks — it **complements** them by making tool access universal and standardized.
+
+---
+
+## 🧠 MCP Core Concepts (Three Key Components)
+
+### 1. Host
+
+* The application or environment using the tools.
+* Examples:
+
+  * Claude Desktop App (most common)
+  * Cursor
+  * Your custom agent app
+* Important: Claude **web chat is not a host**, only the desktop app is (as of now).
+
+### 2. MCP Client
+
+* Lives inside the host
+* Connects the host to one or more MCP Servers
+* One MCP client per MCP server
+* Examples:
+
+  * One client for Google Maps tools
+  * One for file system access
+  * One for stock market lookups
+
+### 3. MCP Server
+
+* A process that provides tools, resources (context), or prompt templates.
+* Think of it like a plugin provider.
+* Examples:
+
+  * A server that provides weather lookup via a weather API
+  * A file system access server
+  * A web page fetcher (e.g., “Fetcher” using Playwright)
+
+---
+
+## 📦 How It All Connects (Summary):
+
+**Your app (Host)** → has **MCP clients** → which connect to **MCP servers** → that expose **tools** to use.
+
+---
+
+## 🧱 3 Architecture Models (Where Servers Run):
+
+1. **Local-Local**: Client + server run locally; work done locally.
+2. **Local + External API**: Server runs locally, but connects to external APIs (like Google or Slack).
+3. **Local-Remote**: MCP server is on a remote machine. Less common, but supported.
+
+> ⟳ Most common: #2 — server on your machine, calling out to APIs.
+
+---
+
+### ⟳ Common Misconception:
+
+* People often think MCP servers must be remote.
+* Truth: Most MCP servers are **run locally**, even if they access remote APIs.
+
+---
+
+## 📡 Communication Mechanisms (Transports)
+
+| Transport | Use Case | Tech                  | Notes                          |
+| --------- | -------- | --------------------- | ------------------------------ |
+| `stdio`   | Local    | Standard Input/Output | Most common for local servers  |
+| `sse`     | Remote   | HTTPS + SSE           | Used for streaming remote data |
+
+---
+
+## 🔌 Analogy
+
+> Think of MCP as a **universal socket system** — like USB-C — for plugging tools into agent apps.
+
+---
+
+## 🎯 What Makes This Powerful
+
+* Simple lines of code = powerful actions:
+
+  * Web scraping
+  * File generation
+* Thousands of ready-to-use tools available in MCP marketplaces like:
+
+  * MCP
+  * Smithery
+  * GlamourAI
+
+---
+
+## 🏭 Marketplaces: A Tool Zoo
+
+* Thousands of tools (e.g., Slack, GitHub, Google Drive, Weather, Time, Blender)
+* Some run locally but call remote APIs
+* Others can be remote MCP servers
+* Sites like Hugging Face Community Blog share highlights and best MCP tools
+
+---
+
+## 💡 Final Insights
+
+* Yes, MCP is that simple — just a **standard for tool access**
+* Its **simplicity is the power**: plug-and-play tool expansion
+* **Next step**: build your own MCP server and client
