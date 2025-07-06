@@ -337,3 +337,277 @@ Coined by **Andrej Karpathy**, **vibe coding** is a relaxed, iterative way of co
 > Vibe coding is fun only if you understand what's going on.  
 > Always follow up by asking the LLM to explain the code until it’s fully clear to you.  
 > Otherwise, debugging becomes painful fast.
+## Week 3 : Crew AI
+
+### 🌐 What Is Crew AI?
+
+Crew AI refers to **three distinct offerings**:
+
+1. **Crew AI Enterprise** – A commercial platform for deploying, running, and managing agents (with UI dashboards).  
+2. **Crew AI UI Studio** – A low-code/no-code tool for building agent workflows (similar to Addendum).  
+3. **Crew AI Framework** – An open-source Python framework to orchestrate agent teams.  
+   💡 _This is what the course focuses on._
+
+---
+
+### 🧠 Key Framework Concepts
+
+#### 1. Crew vs Flows
+
+- **Crew** = A team of agents collaborating autonomously.  
+- **Flows** = Structured, rule-based workflows with precise steps.  
+  - Use **Crew** for: creative, open-ended, autonomous collaboration.  
+  - Use **Flows** for: auditability, control, deterministic logic.  
+
+👉 _This course focuses on **Crews** because it's all about agent autonomy and collaboration._
+
+---
+
+### ⚖️ Comparison to OpenAI Agents SDK
+
+- Crew has different constructs and terminology, but many shared ideas.  
+- You’ll need to adapt mentally to the new structure, but it’s worth it.  
+- Like OpenAI’s SDK, **Crew AI is also**:
+  - ✅ Flexible  
+  - ✅ Well-suited for multi-agent orchestration  
+  - ✅ Increasingly popular  
+
+---
+
+### 🏁 Big Picture Insight
+
+Each framework has strengths. As you explore more (e.g., Crew, Autogen, etc.), notice:
+
+- What’s **similar**  
+- What’s **better**  
+- What **fits your project needs best**
+
+---
+
+## 🧱 Crew AI – Core Concepts & Structure
+
+### 🧑‍🚀 1. Agent
+
+- Smallest autonomous unit; wraps around an LLM.  
+- Has:
+  - **Role** – its function in the crew  
+  - **Goal** – its purpose  
+  - **Backstory** – context to improve behavior  
+  - Optional: **memory** & **tools**
+
+🆚 Compared to OpenAI SDK: _More prescriptive_ (vs. just using “instructions”).
+
+---
+
+### 📋 2. Task
+
+- A specific assignment for an agent.  
+- Has:
+  - **Description**
+  - **Expected Output**
+  - **Assigned Agent**
+
+✅ _New concept not present in OpenAI SDK._
+
+---
+
+### 👥 3. Crew
+
+- A team of agents and tasks.  
+- Two execution modes:
+  - **Sequential**: tasks run one after the other.  
+  - **Hierarchical**: a manager LLM assigns tasks dynamically.
+
+---
+
+### ⚙️ Structure & Implementation
+
+#### 📁 Config (YAML) Files
+
+- Used to define agents and tasks separately from code.  
+- **Benefits**:
+  - Cleaner codebase  
+  - Easier editing/testing of prompts  
+  - YAML is human-readable  
+
+_Example:_  
+```python
+agent = Agent(config="researcher")
+```
+### 🐍 `crew.py` File
+
+**Defines:**
+
+- **Agents** → with `@agent` decorator  
+- **Tasks** → with `@task` decorator  
+- **Crew** → with `@crew` and `@crew_base` decorators  
+
+> The `@agent` decorator registers agents for use in `self.agents`, and similarly for tasks.
+
+---
+
+### 🔁 Trade-Offs
+
+**✅ Pros:**
+- Encourages best practices in prompting (role, goal, backstory)
+- YAML config promotes clean separation of concerns
+- Hierarchical mode supports more dynamic workflows
+
+**⚠️ Cons:**
+- More opinionated and rigid than OpenAI SDK
+- Less direct control over system prompts unless you dig deeper
+
+---
+
+### ⚙️ Crew AI – Model Access & Project Structure
+
+#### 🔌 Flexible LLM Integration with LiteLLM
+
+- Crew uses **LiteLLM** under the hood to connect to any LLM provider
+- Lightweight, simple, and more flexible than LangChain
+
+**Model format:**
+
+```plaintext
+"provider_name/model_name"
+```
+
+**Examples:**
+- `"openai/gpt-4"`
+- `"anthropic/claude-3"`
+- `"google/gemini"`
+- `"openrouter/meta-llama-3"`
+- `"ollama/local-model"` (with a base URL)
+
+> ✅ **Advantage over OpenAI SDK:** Easy switching across models and providers.
+
+---
+
+### 🧱 Crew Project Structure
+
+To create a new agent project:
+
+```bash
+crewai create crew my_crew
+```
+
+**Project scaffold:**
+
+```plaintext
+my_crew/
+├── src/
+│   └── my_crew/
+│       ├── config/
+│       │   ├── agents.yaml     ← Agent definitions
+│       │   └── tasks.yaml      ← Task definitions
+│       ├── crew.py             ← Defines agents, tasks & crew (with decorators)
+│       └── main.py             ← Entry point to run the crew
+├── pyproject.toml              ← Project config (UV managed)
+└── other uv-related files
+```
+
+---
+
+### 🛠 Define Agents & Tasks in YAML
+
+- Located in `config/` folder  
+- Keeps prompts/config clean and separate
+
+---
+
+### 🧠 Implement Logic in `crew.py`
+
+- Use decorators: `@agent`, `@task`, `@crew`
+- Reference YAML or manually create agent/task instances
+
+---
+
+### 🚀 Configure `main.py`
+
+- Pass runtime parameters (e.g., topic of a task)
+- Call the crew object and run the workflow
+
+---
+
+### ▶️ Run the Project
+
+```bash
+crewai run
+```
+
+---
+
+### 🏗️ Key Files
+
+- `agents.yaml` / `tasks.yaml` → YAML configs (role, goal, LLM, etc.)
+- `crew.py` → Decorator-based Python code to define crew logic
+- `main.py` → Execution script
+- `crewai run` → Runs the crew by executing `main.py`
+
+---
+
+### 📌 Summary of Benefits
+
+- ⚡ Fast LLM switching via LiteLLM  
+- 📁 Clean codebase with YAML + Python separation  
+- 🧱 Structured projects support scalability and clarity  
+- 🧰 Uses `uv` for project management (integrates well with your course setup)
+
+---
+
+### 🧰 New Concepts Introduced
+
+#### 🛠 Tools
+- Equip agents with external capabilities  
+- Similar to tools in OpenAI SDK
+
+#### 🔄 Context Passing
+- Explicit way to pass outputs from one task to another  
+- Crucial for multi-step logic or sequential tasks
+
+---
+
+### 🔍 Extra: Using Serper API
+
+- A lightweight Google Search API for agent tools  
+- Free with 2500 credits
+
+**Add key to `.env`:**
+
+```env
+SERPER_API_KEY=your_key_here
+```
+
+> 📝 Note: not the same as SerpAPI — use [serper.dev](https://serper.dev)
+
+---
+
+### 🧠 Memory in Crew AI
+
+Crew supports **5 memory types** — focus on these 3:
+
+---
+
+#### 1. **Short-Term Memory**
+- Uses vector database (e.g., Chroma)  
+- Ideal for related task context passing  
+- Uses **RAG** (retrieval augmented generation)
+
+---
+
+#### 2. **Long-Term Memory**
+- Stores persistent info with **SQLite**  
+- Builds knowledge across long timelines
+
+---
+
+#### 3. **Entity Memory**
+- Like short-term, but tracks named entities (people, places, concepts)  
+- Vector-based storage
+
+---
+
+**Additional Types:**
+- **Contextual Memory** – Umbrella term combining short/long/entity  
+- **User Memory** – For user-specific info (manual handling required)
+
