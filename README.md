@@ -616,7 +616,7 @@ Crew supports **5 memory types** — focus on these 3:
 - **User Memory** – For user-specific info (manual handling required)
 
   
-# 🚀 Week 4 : LangChain and LangGhraph
+# 🚀 Week 4 : LangChain and LangGraph
 
 
 ---
